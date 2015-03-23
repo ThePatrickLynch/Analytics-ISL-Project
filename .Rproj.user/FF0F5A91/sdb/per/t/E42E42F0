@@ -1,0 +1,16 @@
+{
+    "contents" : "##########\n# using stored data put together boxplot\n##########\n\nrm(list=ls())\n\nsetwd='d:/Data/16022015/FROZEN cmpstr_00699 Semester 1 2014-15'\n\n# read some files and set ome values\n\nusers <- read.csv('CMPST_00699 essay data.csv')\ntotalstu<-nrow(users)\n#totalstu\nusers <- subset(users, users$E.MARK > 40, select=c(EID, E.MARK)) # I dont need all of the vectors\n#head(users)\npassstu<-nrow(users)  # i will use this as an indication of relevant events - I'm thinking 10%\n#passstu\n\ndf.table <- read.csv('SEM1 dftable.csv')\nmydfft <- read.csv('SEM1 dfft.csv')\n\n####\n# here I am going to remove those events where there isnt a very high median\n####\n\n#finding median over 10% of sample as dont want to show smaller\nlowest=passstu/10\n#lowest\n\nz<-which(df.table[3,] > lowest)    #find where 3rd row (median) is greater than 5\n#z\ndf.table<-df.table[z] # take only columns in the vector created above\n#df.table\n\nz<-ncol(df.table)\n\nlibrary(RColorBrewer) # nice colour palette stuff\nsomecols<-brewer.pal(z, \"Set2\")\n\npar(mar=c(5,5,5,0),bty='n',cex.axis=.7)   # margins, no box, axis text smaller\nboxplot(df.table, \n        horizontal=T, \n        las=2,\n        axes=T,\n        boxwex=0.6, # width of boxes\n        col.axis='blue', # axis colour\n        col=somecols)\n\n\n#### \n# I need to think about the size of the students points in case I need to extend x axis.\n# also what if the student has other larger activities?\n####\n\n\n### my first function - just plots values onto a boxplot\nmyfunction <- function(colnum,values) {\n  text(x=values, labels=values, y=colnum+0.5,col='blue', cex=0.5, srt=90)   #\n}\n\n\ni<-1\nfor (i in 1:z) {\n  myfunction(i,df.table[,i])\n  \n}\n\nymax<-max(df.table)\n\n# stick some sample size data on\ntext(x=ymax,labels=paste('Passes: (shown)',passstu),y=1,adj=1)\ntext(x=ymax,labels=paste('Participants:',totalstu),y=1.5, adj=1)\n\n\n#### and adding back individual students ...\n\n# subset xtab for student EID 492119\nmydfft\nthis.dt<-subset(mydfft,mydfft$EID=='492119')\nthis.dt\n\n# now plot against each of the boxplot lines the data in this.dt\ndf.table\ninterest<-names(df.table)\n\ni<-1\nfor (i in 1:z) {\n  val<-this.dt$Freq[this.dt$EVENT==interest[i]]\n  pchval<-16\n  points(val,i, pch=pchval, col='orange')\n}\n\n\n\n\n\n",
+    "created" : 1427143571767.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2688568348",
+    "id" : "E42E42F0",
+    "lastKnownWriteTime" : 1427140841,
+    "path" : "E:/data/GitHub/Analytics-ISL-Project/create boxplot of last semester.R",
+    "project_path" : "create boxplot of last semester.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

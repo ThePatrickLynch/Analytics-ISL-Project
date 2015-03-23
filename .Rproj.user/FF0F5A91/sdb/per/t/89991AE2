@@ -1,0 +1,16 @@
+{
+    "contents" : "##########\n# using stored data put together barplot\n##########\n\n#**************\n# not working. can't figure how to save xtab and the read ther file into good format\n#***************\n\n\n\nrm(list=ls())\n\nsetwd='d:/Data/16022015/FROZEN cmpstr_00699 Semester 1 2014-15'\n\n# read some files and set ome values\n\nusers <- read.csv('CMPST_00699 essay data.csv')\ntotalstu<-nrow(users)\n#totalstu\nusers <- subset(users, users$E.MARK > 40, select=c(EID, E.MARK)) # I dont need all of the vectors\n#head(users)\npassstu<-nrow(users)  # i will use this as an indication of relevant events - I'm thinking 10%\n#passstu\n\nmyxtab <- read.table('SEM1 event~EID xtab')\n\nstr(myxtab)\nmyxtab\n\n####\n# this does stacked bars for each user\n#### \n\npar(mar=c(x5,5,1,1)) # more space for bottom margin\nbarplot(myxtab, \n        xlab=\"Freq.\", \n        #ylab=\"User\", \n        las=2,  # vertical labels at bottom\n        legend=T,\n        horiz=T,\n        col=unique(myxtab)) # events by user las=2 is vertical labels on yaxis",
+    "created" : 1427143576079.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "351093227",
+    "id" : "89991AE2",
+    "lastKnownWriteTime" : 1427140823,
+    "path" : "E:/data/GitHub/Analytics-ISL-Project/plot barplot SEM1 data.R",
+    "project_path" : "plot barplot SEM1 data.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
