@@ -1,0 +1,26 @@
+#### Student retention database
+#### Extracts all events for cmpst_00699, associated session data and user Ids 
+#### into a single file
+
+
+SELECT * FROM sakai_event 
+INNER JOIN sakai_session  ON sakai_event.SESSION_ID=sakai_session.SESSION_ID 
+INNER JOIN sakai_user_id_map ON sakai_session.Session_USER=sakai_user_id_map.USER_ID
+WHERE sakai_event.CONTEXT='cmpst_00699'
+
+
+#### similarly everything Michaela has been doing
+
+SELECT * FROM sakai_event 
+INNER JOIN sakai_session  ON sakai_event.SESSION_ID=sakai_session.SESSION_ID 
+INNER JOIN sakai_user_id_map ON sakai_session.Session_USER=sakai_user_id_map.USER_ID
+WHERE sakai_user_id_map.EID='482174'
+
+
+#### selecting distinct sites with events WHICH ARE NOT mY hOME
+
+SELECT COUNT(DISTINCT(CONTEXT)) FROM sakai_event WHERE INSTR(CONTEXT, "~")=0 
+
+#### all sites using pathwway
+
+SELECT COUNT(DISTINCT(CONTEXT)) FROM sakai_event WHERE INSTR(EVENT, "melete")>0 
