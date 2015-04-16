@@ -8,17 +8,22 @@
 #################
 
 
+Sys.time()
+
 rm(list=ls())
 
-setwd('d:/Working Analytics')
+#setwd('d:/Working Analytics')
+#setwd('d:/Data/Analytics/Data/16022015/FROZEN cmpst_00699 Semester 1 2014-15/')
+setwd('h:/Analytics data/16022015/FROZEN cmpst_00699 Semester 1 2014-15/')
+
 getwd()
 
 ####
 # to start with I want to get a list of student ids from the cohort - I only want those who passed the essay
 # this file has results data for the module
 ####
-
 users <- read.csv('CMPST_00699 essay data.csv')
+
 totalstu<-nrow(users)
 #totalstu
 users <- subset(users, users$E.MARK > 40, select=c(EID, E.MARK)) # I dont need all of the vectors
@@ -43,6 +48,8 @@ events <- subset(events, events$EVENT != 'messages.movedtodeletefolder')
 events <- subset(events, events$EVENT != 'messages.newfolder') 
 events <- subset(events, events$EVENT != 'msnd.email.send') 
 events <- subset(events, events$EVENT != 'content.new')
+events <- subset(events, events$EVENT != 'content.available')
+
 
 events$EVENT <- factor(events$EVENT)    # refactoring gets rid of empty levels 
 events$EID <- factor(events$EID)        # and ids not used
@@ -87,6 +94,8 @@ levels(events$EVENT)[levels(events$EVENT)=="site.upd"] <- "Join site"
 # crosstabs let me compare events by user
 ####
 
+Sys.time()
+
 myxtab <- xtabs(~EVENT+EID, data=events) # creates a crosstab
 str(myxtab)
 
@@ -129,16 +138,12 @@ mydfft <- as.data.frame(myft) # converting to a data.frame offers  more precisio
 #     mydfft$Freq, 
 #     las=2) ## plots EVENTS against frequency 
 
-
-
-
 ####
 # printing sorted boxplot for events 
 ####
 
 # organise by median of each event frequency - it just works!
 mydf2 <- with(mydfft,factor(EVENT,levels=levels(EVENT)[order(tapply(Freq,EVENT,median))])) 
-
 
 par(mar=c(5,9,3,1))   # margins
 boxplot(mydfft$Freq~mydf2, 
@@ -158,8 +163,6 @@ thisplot <- boxplot(mydfft$Freq~mydf2,
                     horizontal=T,
                     outline=F,                    # outline=FALSE removes individual marks to make it fit 
                     plot=F) 
-#thisplot
-
 
 # i am here just creating a simple table to show boxplot values
 mydisttable <- thisplot$stats
@@ -170,8 +173,12 @@ rownames(mydisttable) <- c('min','25%', 'median','75%', 'max')
 df.table<-as.data.frame(mydisttable)
 #df.table
 
-# save values for suture fastbuild
+# save values for future fastbuild
 write.csv(df.table,file='SEM1 dftable.csv')
 write.csv(mydfft,file='SEM1 dfft.csv')
 write.csv(myxtab,file='SEM1 event~EID xtab.csv')
+
+
+
+
 
