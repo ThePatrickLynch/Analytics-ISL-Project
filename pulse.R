@@ -34,9 +34,10 @@ tDate
 users <- read.csv('CMPST_00699 essay data.csv')
 events <- read.csv('CMPST_00699 events.csv')
 
-####
-# first subset data for sdmaller transforms
-####
+### 
+# select only columns I have an interest in
+###
+events <- subset(events, select = c(EVENT_DATE, EID, EVENT))
 
 
 # convert EVENT_DATEs to date format
@@ -45,6 +46,8 @@ events <- subset(events, events$EVENT_DATE <= tDate) # take only those lt or eq 
 
 tail(events)
 head(events)
+
+
 ####
 # get a list of only students who passed
 users <- subset(users, users$E.MARK > 40, select=c(EID, E.MARK)) # I dont need all of the vectors
@@ -53,11 +56,6 @@ users <- subset(users, users$E.MARK > 40, select=c(EID, E.MARK)) # I dont need a
 events <- merge(events, users, by='EID', all.y=T) 
 events <- events[order(events$EVENT_DATE),] # need to reorder on date (asc) after merge
 
-### 
-# select only columns I have an interest in
-###
-
-events <- subset(events, select = c(EVENT_DATE, EID, EVENT))
 
 
 ####
@@ -123,6 +121,12 @@ str(dailyCount)
 dailyCount$EVENT_DATE <- NULL
 dailyCount$EID <- NULL
 
+##########################
+###
+### should work these out as averages? Or modes or boxplots :)
+###
+##########################
+
 par 
 
 ggplot(aes(x = Group.1, y = EVENT), data = dailyCount) +
@@ -139,6 +143,15 @@ ggplot(aes(x = Group.1, y = EVENT, group=1), data = dailyCount) +
   geom_line() +
   geom_line(color='blue') + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(x = 'Total activity', y = 'Date', title='Activity by date')
+  labs(x = 'Date', y = 'Total activity', title='Activity by date')
+
+
+#######
+# now to pick an individual student and plot their pulse
+#############
+
+myStudent <- '47169'
+
+
 
 
