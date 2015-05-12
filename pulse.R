@@ -1,7 +1,7 @@
 
 
 rm(list=ls())
-setwd('d:/Data/Working Analytics')
+setwd('h:/Analytics Data/fhsc_skills/SEM1_2014-15')
 
 #install.packages('ggplot2')
 library(ggplot2)
@@ -13,8 +13,6 @@ readdate <- function()
   return(n)
 }
 
-
-
 # The following should come in as a parameter when  figure that out
 # it works like this - args <- commandArgs(trailingOnly = TRUE)
 # called by (in path) rscript filename.R args'
@@ -22,7 +20,7 @@ readdate <- function()
 # for now input
 
 tDate <- readdate()
- 
+
 # should probably have a start date, but later slice looks only at student activity
 tDate
 
@@ -51,7 +49,9 @@ head(events)
 ####
 # get a list of only students who passed
 users <- subset(users, users$E.MARK > 40, select=c(EID, E.MARK)) # I dont need all of the vectors
-# now I have that list I can right join with the events for this course to filter only those users in the list
+studentcount<-nrow(users)
+
+# now I have that list I can right join with the events for this course to filter only those students who passed in the list
 # this will also get rid of staff events 
 events <- merge(events, users, by='EID', all.y=T) 
 events <- events[order(events$EVENT_DATE),] # need to reorder on date (asc) after merge
@@ -114,6 +114,12 @@ hist(events$EVENT_DATE, hBreaks, las=2)
 
 # then get count for each day
 dailyCount<- aggregate(events, by = list(as.character(events$EVENT_DATE)), length)
+
+# to get the average per student then divide byy number of students
+
+dailyCount$EVENT <- dailyCount$EVENT / studentcount
+
+
 head(dailyCount)
 str(dailyCount)
 
@@ -133,7 +139,7 @@ ggplot(aes(x = Group.1, y = EVENT), data = dailyCount) +
   geom_point() +
   geom_point(color='blue') + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(x = 'Total activity', y = 'Date', title='Activity by date')
+  labs(x = 'Activity', y = 'Date', title='Average activity by date')
 
 
 # dates as factors are not continuous here so I need to define a dummy group for ggplot to
@@ -151,7 +157,3 @@ ggplot(aes(x = Group.1, y = EVENT, group=1), data = dailyCount) +
 #############
 
 myStudent <- '47169'
-
-
-
-
