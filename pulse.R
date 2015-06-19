@@ -1,4 +1,7 @@
-
+###########
+# Pulse
+# shows an individual student's activity against previous cohorts average
+###########
 
 rm(list=ls())
 setwd('h:/Analytics Data/fhsc_skills/SEM1_2014-15')
@@ -20,10 +23,11 @@ readdate <- function()
 # for now input
 
 tDate <- readdate()
+FromDate <- as.POSIXct("30/09/2014", format="%d/%m/%Y")
+
 
 # should probably have a start date, but later slice looks only at student activity
 tDate
-
 
 ####
 # to start with I want to get a list of student ids from the cohort - I only want those who passed the essay
@@ -37,25 +41,12 @@ events <- read.csv('CMPST_00699 events.csv')
 ###
 events <- subset(events, select = c(EVENT_DATE, EID, EVENT))
 
-
 # convert EVENT_DATEs to date format
 events$EVENT_DATE <- as.POSIXct(as.character(events$EVENT_DATE), format="%d/%m/%Y %H:%M")
+
+events <- subset(events, events$EVENT_DATE => FromDate) # only after official start date
+
 events <- subset(events, events$EVENT_DATE <= tDate) # take only those lt or eq target date
-
-tail(events)
-head(events)
-
-
-####
-# get a list of only students who passed
-users <- subset(users, users$E.MARK > 40, select=c(EID, E.MARK)) # I dont need all of the vectors
-studentcount<-nrow(users)
-
-# now I have that list I can right join with the events for this course to filter only those students who passed in the list
-# this will also get rid of staff events 
-events <- merge(events, users, by='EID', all.y=T) 
-events <- events[order(events$EVENT_DATE),] # need to reorder on date (asc) after merge
-
 
 
 ####
@@ -97,10 +88,26 @@ levels(events$EVENT)[levels(events$EVENT)=="pres.begin"] <- "Join site"
 levels(events$EVENT)[levels(events$EVENT)=="site.upd"] <- "Join site"
 
 
-# so now I want to plot overall activity to a given date
-
 # histogram of events dist
 events$EVENT_DATE <- round(events$EVENT_DATE , "day" ) # round dates to just days
+
+# get a copy of events for our individual student
+st.events <- events
+
+tail(events)
+head(events)
+
+####
+# get a list of only students who passed 'pusers'
+pass.users <- subset(users, users$E.MARK > 40, select=c(EID, E.MARK)) # I dont need all of the vectors
+studentcount<-nrow(pass.users)
+
+# now I have that list I can right join with the events for this course to filter only those students who passed in the list
+# this will also get rid of staff events 
+events <- merge(events, pass.users, by='EID', all.y=T) 
+events <- events[order(events$EVENT_DATE),] # need to reorder on date (asc) after merge
+
+# so now I want to plot overall activity to a given date
 
 firstDate<-events$EVENT_DATE[1]  # gets the first date in the list
 head(events)
@@ -117,9 +124,9 @@ dailyCount<- aggregate(events, by = list(as.character(events$EVENT_DATE)), lengt
 
 # to get the average per student then divide byy number of students
 
-dailyCount$EVENT <- dailyCount$EVENT / studentcount
+dailyCount$EVENT2 <- dailyCount$EVENT / studentcount
 
-
+studentcount
 head(dailyCount)
 str(dailyCount)
 
@@ -129,9 +136,12 @@ dailyCount$EID <- NULL
 
 ##########################
 ###
-### should work these out as averages? Or modes or boxplots :)
+### work these out as averages? Or could use modes or boxplots :)
 ###
+### styudentcount is the count of considered students
 ##########################
+dailyCount$EVENT <- dailyCount$EVENT / studentcount
+dailyCount$Group <- row.names(dailyCount)
 
 par 
 
@@ -149,11 +159,30 @@ ggplot(aes(x = Group.1, y = EVENT, group=1), data = dailyCount) +
   geom_line() +
   geom_line(color='blue') + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(x = 'Date', y = 'Total activity', title='Activity by date')
+  labs(x = 'Date', y = 'Total activity', title='Average activity by date')
 
 
 #######
 # now to pick an individual student and plot their pulse
 #############
 
-myStudent <- '47169'
+# load the current module
+# transform data
+# get records just for this student
+# Day one is FromDate in original and first day in this
+# so plot each day against appropriate point as far as we go
+
+my.Student <- '492119'
+
+head(st.events)
+
+# just get this student's records
+my.events <- subset(st.events, users$EID == my.Student, select = c(EVENT_DATE, EVENT))
+# sort
+my.events <- my.events[order(my.events$EVENT_DATE),] # need to reorder on date (asc) after merge
+my.firstDate<-my.events$EVENT_DATE[1]  # gets the first date in the list
+head(my.events)
+
+# load the current module
+
+row.names(dailyCount)

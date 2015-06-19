@@ -10,7 +10,7 @@
 
 rm(list=ls())
 
-setwd='d:/Data/16022015/FROZEN cmpstr_00699 Semester 1 2014-15'
+setwd='h:/Analytics data/fhsc_skills/SEM1_2014-15/CMPST_00699 events.csv'
 
 ####
 # to start with I want to get a list of student ids from the cohort - I only want those who passed the essay
