@@ -8,6 +8,7 @@ setwd('h:/Analytics Data/fhsc_skills/SEM1_2014-15')
 
 #install.packages('ggplot2')
 library(ggplot2)
+library(scales) # breaks and formatting functions
 
 readdate <- function()
 { 
@@ -21,13 +22,14 @@ readdate <- function()
 # called by (in path) rscript filename.R args'
 
 # for now input
-
-tDate <- readdate()
-FromDate <- as.POSIXct("30/09/2014", format="%d/%m/%Y")
-
+# tDate <- readdate() 
+FromDate <- as.POSIXct("03/10/2014", format="%d/%m/%Y")  # this was the end of the course
+tDate <- as.POSIXct("15/01/2015", format="%d/%m/%Y") 
 
 # should probably have a start date, but later slice looks only at student activity
+FromDate
 tDate
+
 
 ####
 # to start with I want to get a list of student ids from the cohort - I only want those who passed the essay
@@ -44,7 +46,7 @@ events <- subset(events, select = c(EVENT_DATE, EID, EVENT))
 # convert EVENT_DATEs to date format
 events$EVENT_DATE <- as.POSIXct(as.character(events$EVENT_DATE), format="%d/%m/%Y %H:%M")
 
-events <- subset(events, events$EVENT_DATE => FromDate) # only after official start date
+events <- subset(events, events$EVENT_DATE >= FromDate) # only after official start date
 
 events <- subset(events, events$EVENT_DATE <= tDate) # take only those lt or eq target date
 
@@ -115,15 +117,15 @@ head(events)
 hBreaks<-as.numeric(difftime(tDate, firstDate , units="days")) # calculates the number of days in the data
 firstDate
 head(events)
-par(mar=c(10,9,10,10))   # margins
+#par(mar=c(10,9,10,10))   # margins
 hist(events$EVENT_DATE, hBreaks, las=2)
 
 
 # then get count for each day
-dailyCount<- aggregate(events, by = list(as.character(events$EVENT_DATE)), length)
+#dailyCount<- aggregate(events, by = list(as.character(events$EVENT_DATE)), length)
+dailyCount<- aggregate(events, by = list(as.Date(events$EVENT_DATE)), length)
 
-# to get the average per student then divide byy number of students
-
+# to get the average per student then divide by number of students
 dailyCount$EVENT2 <- dailyCount$EVENT / studentcount
 
 studentcount
@@ -134,32 +136,91 @@ str(dailyCount)
 dailyCount$EVENT_DATE <- NULL
 dailyCount$EID <- NULL
 
+
 ##########################
 ###
 ### work these out as averages? Or could use modes or boxplots :)
 ###
 ### styudentcount is the count of considered students
 ##########################
-dailyCount$EVENT <- dailyCount$EVENT / studentcount
-dailyCount$Group <- row.names(dailyCount)
+dailyCount$Day <- as.integer(row.names(dailyCount)) # equivalent of a day number field for comparisons
 
-par 
-
-ggplot(aes(x = Group.1, y = EVENT), data = dailyCount) +
+                             
+ggplot(aes(x = Day, y = EVENT2), data = dailyCount) +
   geom_point() +
   geom_point(color='blue') + 
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(x = 'Activity', y = 'Date', title='Average activity by date')
+  labs(x = 'Day', y = 'Average events', title='Average activity by date')
 
 
 # dates as factors are not continuous here so I need to define a dummy group for ggplot to
 # allow it to join the points
 
-ggplot(aes(x = Group.1, y = EVENT, group=1), data = dailyCount) + 
+#ggplot(aes(x = Group.1, y = EVENT2, group=1), data = dailyCount) + 
+ggplot(aes(x = Day, y = EVENT2, group=1), data = dailyCount) +   
   geom_line() +
   geom_line(color='blue') + 
+#  scale_x_date(labels = date_format("%b-%d")) +
+#  scale_x_date(labels = date_format("%d")) +
+  scale_x_continuous(breaks=1:107) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(x = 'Date', y = 'Total activity', title='Average activity by date')
+  labs(x = 'Day', y = 'Average activity', title='Average activity by day')
+
+#################################################################
+# quick experiment to plot an individual against the average
+
+
+my.Student <- '492119'
+
+head(st.events)
+
+# just get this student's records
+my.events <- subset(st.events, users$EID == my.Student, select = c(EVENT_DATE, EVENT, EID))
+# sort
+my.events <- my.events[order(my.events$EVENT_DATE),] # need to reorder on date (asc) after merge
+
+head(my.events)
+tail(my.events)
+
+# need to start plotting at the right start day
+
+# then get count for each day
+my.dailyCount<- aggregate(my.events, by = list(as.Date(my.events$EVENT_DATE)), length)
+my.dailyCount$Day <- as.integer(row.names(my.dailyCount)) # equivalent of a day number field for comparisons
+
+studentcount
+head(my.dailyCount)
+str(my.dailyCount)
+
+# dont need these two columns now
+my.dailyCount$EVENT_DATE <- NULL
+my.dailyCount$EID <- NULL
+
+# first go at two lines on same plot
+ggplot(aes(x = Day, y = EVENT2, group=1), data = dailyCount) +   
+  geom_line() +
+  geom_line(color='blue') + 
+  geom_line(aes(x = Day, y = EVENT, group=1), data=my.dailyCount,color='red') +
+  scale_x_continuous(breaks=1:107) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x = 'Day', y = 'Average activity', title='Average activity by day') 
+
+# has problem I think where dates are not lining up
+
+
+# using the actual date will line up better than what I have taken as the day count 
+
+ggplot(aes(x = Group.1, y = EVENT2, group=1), data = dailyCount) + 
+  geom_line() +
+  geom_line(color='blue') + 
+  scale_x_date(labels = date_format("%b-%d")) +
+  #  scale_x_date(labels = date_format("%d")) +
+  geom_line(aes(x = Group.1, y = EVENT, group=1), data=my.dailyCount,color='red') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x = 'Day', y = 'Average activity', title='Average activity by day')
+
+
+# this means to succesfully line up a student from another cohort I will need to convert dates into days from start!
 
 
 #######
@@ -172,16 +233,6 @@ ggplot(aes(x = Group.1, y = EVENT, group=1), data = dailyCount) +
 # Day one is FromDate in original and first day in this
 # so plot each day against appropriate point as far as we go
 
-my.Student <- '492119'
-
-head(st.events)
-
-# just get this student's records
-my.events <- subset(st.events, users$EID == my.Student, select = c(EVENT_DATE, EVENT))
-# sort
-my.events <- my.events[order(my.events$EVENT_DATE),] # need to reorder on date (asc) after merge
-my.firstDate<-my.events$EVENT_DATE[1]  # gets the first date in the list
-head(my.events)
 
 # load the current module
 
