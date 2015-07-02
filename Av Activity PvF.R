@@ -145,7 +145,7 @@ dailyCount$EID <- NULL
 ##########################
 dailyCount$Day <- as.integer(row.names(dailyCount)) # equivalent of a day number field for comparisons
 
-                             
+
 ggplot(aes(x = Day, y = EVENT2), data = dailyCount) +
   geom_point() +
   geom_point(color='blue') + 
@@ -160,68 +160,50 @@ ggplot(aes(x = Day, y = EVENT2), data = dailyCount) +
 ggplot(aes(x = Day, y = EVENT2, group=1), data = dailyCount) +   
   geom_line() +
   geom_line(color='blue') + 
-#  scale_x_date(labels = date_format("%b-%d")) +
-#  scale_x_date(labels = date_format("%d")) +
+  #  scale_x_date(labels = date_format("%b-%d")) +
+  #  scale_x_date(labels = date_format("%d")) +
   scale_x_continuous(breaks=1:107) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   labs(x = 'Day', y = 'Average activity', title='Average activity by day')
 
-#################################################################
-# quick experiment to plot an individual against the average
 
+# out of interest what about those students who failed?
+####
+# get a list of only students who failed
+fail.users <- subset(users, users$E.MARK < 40, select=c(EID, E.MARK)) # I dont need all of the vectors
+fail.studentcount<-nrow(fail.users)
 
-my.Student <- '492119'
+# now I have that list I can right join with the events for this course to filter only those students who passed in the list
+# this will also get rid of staff events 
+str(st.events)
 
-head(st.events)
-
-# just get this student's records
-my.events <- subset(st.events, users$EID == my.Student, select = c(EVENT_DATE, EVENT, EID))
-# sort
-my.events <- my.events[order(my.events$EVENT_DATE),] # need to reorder on date (asc) after merge
-
-head(my.events)
-tail(my.events)
-
-# need to start plotting at the right start day
+myf.events <- merge(st.events, fail.users, by='EID', all.y=T) 
+myf.events <- myf.events[order(myf.events$EVENT_DATE),] # need to reorder on date (asc) after merge
 
 # then get count for each day
-my.dailyCount<- aggregate(my.events, by = list(as.Date(my.events$EVENT_DATE)), length)
-my.dailyCount$Day <- as.integer(row.names(my.dailyCount)) # equivalent of a day number field for comparisons
+myf.dailyCount<- aggregate(myf.events, by = list(as.Date(myf.events$EVENT_DATE)), length)
+myf.dailyCount$Day <- as.integer(row.names(myf.dailyCount)) # equivalent of a day number field for comparisons
 
-studentcount
-head(my.dailyCount)
-str(my.dailyCount)
+# to get the average per student then divide by number of students
+myf.dailyCount$EVENT2 <- myf.dailyCount$EVENT / fail.studentcount
+
+fail.studentcount
+head(myf.dailyCount)
+str(myf.dailyCount)
 
 # dont need these two columns now
-my.dailyCount$EVENT_DATE <- NULL
-my.dailyCount$EID <- NULL
+myf.dailyCount$EVENT_DATE <- NULL
+myf.dailyCount$EID <- NULL
 
-# first go at two lines on same plot
-# good code just might be missing days from indov student
-#ggplot(aes(x = Day, y = EVENT2, group=1), data = dailyCount) +   
-#  geom_line() +
-#  geom_line(color='blue') + 
-#  geom_line(aes(x = Day, y = EVENT, group=1), data=my.dailyCount,color='red') +
-#  scale_x_continuous(breaks=1:107) +
-#  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-#  labs(x = 'Day', y = 'Average activity', title='Average activity by day') 
-
-# has problem I think where dates are not lining up
-
-
-# using the actual date will line up better than what I have taken as the day count 
 ggplot(aes(x = Group.1, y = EVENT2, group=1), data = dailyCount) + 
   geom_line() +
-  geom_line(color='blue') + 
+  geom_line(color='green') + 
   scale_x_date(labels = date_format("%b-%d")) +
   #  scale_x_date(labels = date_format("%d")) +
-  geom_line(aes(x = Group.1, y = EVENT, group=1), data=my.dailyCount,color='red') +
+  geom_line(aes(x = Group.1, y = EVENT2, group=1), data=myf.dailyCount,color='red') +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
   labs(x = 'Day', y = 'Average activity', title='Average activity by day')
 
-
-
-# this means to succesfully line up a student from another cohort I will need to convert dates into days from start!
 
 
 

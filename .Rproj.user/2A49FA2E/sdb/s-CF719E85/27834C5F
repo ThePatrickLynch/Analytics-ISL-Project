@@ -1,0 +1,22 @@
+{
+    "contents" : "",
+    "created" : 1435844273434.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "27834C5F",
+    "lastKnownWriteTime" : 3242928,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "caption" : "myf.dailyCount",
+        "contentUrl" : "content?title=myf.dailyCount&file=64a9106730fe4d259febb6454de98e1c.htm",
+        "displayedObservations" : 94,
+        "displayedVariables" : 5,
+        "totalObservations" : 94,
+        "variables" : 5
+    },
+    "source_on_save" : false,
+    "type" : "r_dataframe"
+}
