@@ -197,7 +197,7 @@ my.dailyCount$EVENT_DATE <- NULL
 my.dailyCount$EID <- NULL
 
 # first go at two lines on same plot
-# good code just might be missing days from indov student
+# good code just might be missing days from indiv student
 #ggplot(aes(x = Day, y = EVENT2, group=1), data = dailyCount) +   
 #  geom_line() +
 #  geom_line(color='blue') + 
@@ -238,4 +238,3 @@ ggplot(aes(x = Group.1, y = EVENT2, group=1), data = dailyCount) +
 
 # load the current module
 
-row.names(dailyCount)
